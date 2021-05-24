@@ -26,8 +26,6 @@ import boom from '@hapi/boom'; //Para el manejo de errores.
 import passport from 'passport'; // Para implementar estrategias.
 import axios from 'axios'; // Para las peticiones http a la api (movie-api).
 
-// Extraemos solo las variables de entorno que vamos a usar.
-const { env, port } = config;
 // Creamos la app de express para los llamados GET y demas.
 const app = express();
 
@@ -40,7 +38,7 @@ require('./utils/auth/strategies/basic'); // Traemos la estrategia para aplicarl
 
 // Esta validacion es para ver si la variable de entorno env funciona
 // y la usa para lanzar en modo desarrollo.
-if (env === "development") {
+if (config.env === "development") {
   console.log("Development config");
   // Definimos la configuracion de webpack dentro de una constante.
   const webpackConfig = require('../../webpack.config');
@@ -54,7 +52,7 @@ if (env === "development") {
   // En este objeto se pasa el puerto donde se escucha la app y el hot: true es para decirle
   // a la configuracion que estamos usando el hotModeReplacemen de webpack.
   // Para eso el middleware hot de webpack. Esta configuracion son en el webpackDevMiddleware.
-  const serverConfig = { port: port, hot: true };
+  const serverConfig = { port: config.port, hot: true };
 
   // Usamos los middleware. El primero es para configurar webpack en el servidor en modo desarrollo.
   // El segundo es para el hotModeReplacemen (El compilado automatico con los cambios).
@@ -205,15 +203,24 @@ app.post("/auth/sign-up", async function(req, res, next) {
 
   try {
     // Con axios hacemos una peticion a la api-server para crear un user.
-    await axios({
+    const userData = await axios({
       url: `${config.apiUrl}/api/auth/sign-up`,
       method: 'post',
-      data: user,
+      data: { // Enviamos a la api los datos de user necesarios.
+        email: user.email,
+        name: user.name,
+        password: user.password,
+      },
     });
 
     // Respondemos que se creo con estatus 201.
+    // Y ademas con un objeto que contiene los datos del user.
+    // Esto porque el forntend va a recibir esta informacion mediante
+    // redux thunk gracias al action que se acaba de agregar.
     res.status(201).json({
-      message: 'user created',
+      name: req.body.name,
+      email: req.body.email,
+      id: userData.data.id,
     });
   } catch (error) {
     next(error);
@@ -228,9 +235,9 @@ app.get("*", renderApp);
 
 // Lansamos la app de expres en el puerto que defnimos en
 // la variable de entorno.
-app.listen(port, (err) => {
+app.listen(config.port, (err) => {
   // Validamos el error y si es asi lo mostramos o mostramos
   // en puerto en el que se lanzo el servidor.
   if (err) console.log(err);
-  else console.log("Server running on port", port);
+  else console.log("Server running on port", config.port);
 });
