@@ -8,7 +8,7 @@ const ESLintPlugin = require("eslint-webpack-plugin");
 
 require('dotenv').config();
 
-const isDev = (process.env.ENV === 'development');
+const isDev = (process.env.DEV === 'development');
 const entry = ['./src/frontend/index.js'];
 if(isDev) {
    entry.push('webpack-hot-middleware/client?path=/__webpack_hmr&timeout=2000&reload=true');
@@ -16,7 +16,7 @@ if(isDev) {
 
 module.exports = {
    entry,
-   mode: process.env.ENV,
+   mode: process.env.DEV,
    output: {
       path: path.resolve(__dirname, 'src/server/public'),
       filename: isDev ? 'assets/app.js' : 'assets/app-[contenthash].js',

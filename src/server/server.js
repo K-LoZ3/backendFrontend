@@ -38,7 +38,7 @@ require('./utils/auth/strategies/basic'); // Traemos la estrategia para aplicarl
 
 // Esta validacion es para ver si la variable de entorno env funciona
 // y la usa para lanzar en modo desarrollo.
-if (config.env === "development") {
+if (config.dev === "development") {
   console.log("Development config");
   // Definimos la configuracion de webpack dentro de una constante.
   const webpackConfig = require('../../webpack.config');

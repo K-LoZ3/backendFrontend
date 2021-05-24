@@ -9,12 +9,11 @@ dotenv.config();
 // Estas salen de process.env ya que con dotenv configuramos para que esto
 // fuera posible.
 const config = {
-    env: process.env.ENV,
+    dev: process.env.DEV,
     port: process.env.PORT,
     apiUrl: process.env.API_URL,
+    apiKeyToken: process.env.API_KEY_TOKEN,
 }
 
 // Exportamos para usarlas en los demas archivos.
-export default {
-    config: config,
-}
+export default config;

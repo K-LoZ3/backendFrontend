@@ -54,10 +54,10 @@ export const registerUser = (payload, redirectUrl) => {
     // registros. Por ultimo, redirigimos al usuario a la ruta en enviamos
     // como segundo parametro.
     axios.post('/auth/sign-up', payload)
-    .then(({ data }) => dispatch(registerRequest(data)))
-    .then(() => {
-      window.location.href = redirectUrl;
-    })
-    .catch(error => dispatch(setError(error)));
-  }
-}
+      .then(({ data }) => dispatch(registerRequest(data)))
+      .then(() => {
+        window.location.href = redirectUrl;
+      })
+      .catch((error) => dispatch(setError(error)));
+  };
+};
