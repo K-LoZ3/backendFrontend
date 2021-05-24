@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux'; // appplyMiddleware para implementar thunk.
+import thunk from 'redux-thunk';
 import { Router } from 'react-router-dom'; // Agregamos para poder incluir el historial.
 import { createBrowserHistory } from 'history'; // Importamos para crear el historial dentro del frontend.
 import reducer from './reducers';
@@ -11,7 +12,8 @@ const history = createBrowserHistory(); // Creamos el historial.
 const preloadedState = window.__PRELOADED_STATE__; // Con esto accedemos al preload que se encrusto en el html del servidor.
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
 // Usamos el preloadedState para no crear un store distinto.
-const store = createStore(reducer, preloadedState, composeEnhancers);
+// De esta menera incluimos thunk al proyecto.
+const store = createStore(reducer, preloadedState, composeEnhancers(applyMiddleware(thunk)));
 
 delete window.__PRELOADED_STATE__;
 // Esto porque el estado queda en el navegador. Si el usuario entra en la consola del navegador
