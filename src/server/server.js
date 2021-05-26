@@ -128,16 +128,30 @@ const setResponse = (html, preloadedState, manifest) => {
 // El script es para poder pasar el preloadState para que el frontend pueda acceder y usarlo.
 
 // Con esta funcion convertimos todos los componentes de react en el frontend como un string
-// De esta manera los podemos pasar a un html y enviarlo como un string por una peticion GET
-const renderApp = (req, res) =>{
+// De esta manera los podemos pasar a un html y enviarlo como un string por una peticion GET.
+// Hacemos asincrona esta funcion ya vamos a nececitar hacer una peticion a la base de datos
+// para obtener las peliculas.
+const renderApp = async (req, res) =>{
   // Creamos un nuevo initiaState para cargarlo con la data necesaria.
   // Esto para que contenga el user, sus videos y demas. O que no mustre nada si no hay user.
   let initialState;
   // Con esto leemos las cookies del navegador y las podemos usar.
-  const { email, name, id } = req.cookies;
+  const { token, email, name, id } = req.cookies;
 
-  // Si existe un user lo incluimos en el initialState.
-  if(id) {
+  // De esta manera creamos el initial state.
+  try {
+    // Con axios hacemos una peticion a la api para obtener todas las movies de la DB
+    // Para esto necesitamos el JWT con el scope del user, este lo tenemos en las cookies.
+    // Lo enviamos por Bearer ya que es el metodo de autorizacion que tenemos en la api.
+    let movieList = await axios({
+      url: `${config.apiUrl}/api/movies`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'get',
+    });
+    // Esto de data es porque axios nos devuelve todo dentro de data y ademas de eso,
+    // nosotros tenemos todo dentro de otro data.
+    movieList = movieList.data.data;
+
     initialState = {
       user: {
         email,
@@ -146,11 +160,13 @@ const renderApp = (req, res) =>{
       },
       playing: {},
       myList: [],
-      trends: [],
+      // Los que tengan PG y tengan un id seran los que van en trends.
+      trends: movieList.filter((movie) => movie.contentRating === 'PG' && movie._id),
       search: [],
-      originals: [],
+      // Los que tengan G y un id iran en originals.
+      originals: movieList.filter((movie) => movie.contentRating === 'G' && movie._id),
     }
-  } else {
+  } catch (err) { // Si hay error enviamos todo en blanco ya que quiere decir que no es un user valido.
     initialState = {
       user: {},
       playing: {},
