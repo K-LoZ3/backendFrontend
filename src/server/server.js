@@ -159,19 +159,19 @@ const renderApp = (req, res) =>{
 // Para iniciar session.
 app.post("/auth/sign-in", async function(req, res, next) {
   // Obtenemos el atributo rememberMe desde el cuerpo del request
-  const { rememberMe } = req.body;
+  //const { rememberMe } = req.body;
 
   passport.authenticate('basic', function(error, data) {
     try {
       // Si nuestra estrategia basic fallo, devolvemos un error.
       if (error || !data) {
-        next(boom.unauthorized());
+        return next(boom.unauthorized());
       }
 
       // Si esta bien creamos la session.
-      req.login(data, { session: false }, async function(error) {
-        if (error) {
-          next(error);
+      req.login(data, { session: false }, async function(err) {
+        if (err) {
+          return next(err);
         }
 
         const { token, ...user } = data;
@@ -185,14 +185,14 @@ app.post("/auth/sign-in", async function(req, res, next) {
         res.cookie("token", token, {
           httpOnly: !config.dev,
           secure: !config.dev,
-          maxAge: rememberMe ? THIRTY_DAYS_IN_SEC : TWO_HOURS_IN_SEC,
+          //maxAge: rememberMe ? THIRTY_DAYS_IN_SEC : TWO_HOURS_IN_SEC,
         });
 
         // Respondemos con el user.
         res.status(200).json(user);
       });
-    } catch (error) {
-      next(error);
+    } catch (err) {
+      return next(err);
     }
   })(req, res, next);
 });

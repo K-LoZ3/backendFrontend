@@ -61,3 +61,32 @@ export const registerUser = (payload, redirectUrl) => {
       .catch((error) => dispatch(setError(error)));
   };
 };
+
+// Del payload sacamos email y password, ya que el primer parametro seria este.
+export const loginUser = ({ email, password }, redirectUrl) => {
+  return (dispatch) => {
+    // La peticion axios recibe un objeto de configuracion para hacer la peticion.
+    // Imagino que no se hizo como sign-up ya que necesitaba pasar el parametro
+    // de auth para los datos del user.
+    axios({
+      url: '/auth/sign-in', // Tanto esta como la anterior ruta son las del ssr,
+      // ya que este es el encargado de llamar a la api-server.
+      method: 'post',
+      auth: {
+        username: email,
+        password,
+      },
+    }) // La respuesta de esta peticion se guarda en la cookie.
+    .then(({ data }) => {
+      document.cookie = `email=${data.user.email}`;
+      document.cookie = `name=${data.user.name}`;
+      document.cookie = `id=${data.user.id}`;
+      document.cookie = `token=${data.user.token}`;
+      dispatch(loginRequest(data.user));
+    }) // Y se logea en el frontend con el action original.
+    .then(() => { // Redireccionamos.
+      window.location.href = redirectUrl;
+    })
+    .catch((err) => dispatch(setError(err))); // Manejamos el error.
+  };
+};

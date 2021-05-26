@@ -3,7 +3,7 @@ const { BasicStrategy } = require('passport-http'); // La estrategia.
 const boom = require('@hapi/boom'); // Para manejar errores.
 const axios = require('axios'); // Para hacer peticiones/request a otros servidores.
 // Para este caso a la api-server.
-const { config } = require('../../../config/index'); // Para las variables de entorno.
+import config from "../../../config"; // Para las variables de entorno.
 
 // Implementamos la estrategia.
 passport.use(
@@ -22,7 +22,7 @@ passport.use(
           username: email,
         },
         data: {
-          apiKeyToken: config.apiKeyToken,
+          apiKeyToken: config.apiKeyToken, // Token para el scope del user.
         },
       });
 
@@ -30,7 +30,7 @@ passport.use(
       if (!data || status !== 200) {
         return cb(boom.unauthorized(), false);
       }
-
+      
       // Si son correctos llamamos al siguiente middleware.
       return cb(null, data);
     } catch (error) {
