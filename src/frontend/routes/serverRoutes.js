@@ -7,31 +7,35 @@ import NotFound from '../containers/NotFound';
 import Player from '../containers/Player';
 
 // Creamos un arreglo con toda las rutas.
-const routes = [
-  {
-    exact: true,
-    path: '/',
-    component: Home,
-  },
-  {
-    exact: true,
-    path: '/login',
-    component: Login,
-  },
-  {
-    exact: true,
-    path: '/register',
-    component: Register,
-  },
-  {
-    exact: true,
-    path: '/player/:id',
-    component: Player,
-  },
-  {
-    name: 'NotFound',
-    component: NotFound,
-  },
-];
+// Lo cambiamos a una funcion ya que queremos revisar si hay un user
+// antes de establecer lo que se mostrara en cada ruta.
+const serverRoutes = (isLogged) => {
+  return [
+    {
+      exact: true,
+      path: '/',
+      component: isLogged ? Home : Login,
+    },
+    {
+      exact: true,
+      path: '/login',
+      component: Login,
+    },
+    {
+      exact: true,
+      path: '/register',
+      component: Register,
+    },
+    {
+      exact: true,
+      path: '/player/:id',
+      component: isLogged ? Player : Login,
+    },
+    {
+      name: 'NotFound',
+      component: NotFound,
+    },
+  ];
+}
 
-export default routes;
+export default serverRoutes;

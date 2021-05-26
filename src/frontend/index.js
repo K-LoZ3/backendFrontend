@@ -22,10 +22,13 @@ delete window.__PRELOADED_STATE__;
 
 // Cambiamos render por hydrate ya que no queremos que se renderice el react otra vez.
 // Para resumir toda la configuracion en README.md
+// Este preloadedState lo enviaremos a traver del ssr. Cuando inicie session se guradara
+// los datos del user en este preloaded para que puedan ser enviados al frontend.
+// Va entre parentecis para que de verdadero o falso.
 ReactDOM.hydrate(
   <Provider store={store}>
     <Router history={history}>
-      <App />
+      <App isLogged={(preloadedState.user.id)} />
     </Router>
   </Provider>,
   document.getElementById('app'),

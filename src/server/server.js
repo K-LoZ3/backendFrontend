@@ -18,7 +18,6 @@ import { renderRoutes } from 'react-router-config';
 import { StaticRouter } from 'react-router-dom';
 import serverRoutes from '../frontend/routes/serverRoutes'; // Importamos las rutas para renderizarlas del lado del servidor.
 import reducer from '../frontend/reducers'; // Importamos para crear bien el store.
-import initialState from '../frontend/initialState'; // Importamos para crear bien el store.
 import getManifest from './getManifest';
 
 import cookieParser from 'cookie-parser'; // Para el manejo de cookies.
@@ -131,6 +130,37 @@ const setResponse = (html, preloadedState, manifest) => {
 // Con esta funcion convertimos todos los componentes de react en el frontend como un string
 // De esta manera los podemos pasar a un html y enviarlo como un string por una peticion GET
 const renderApp = (req, res) =>{
+  // Creamos un nuevo initiaState para cargarlo con la data necesaria.
+  // Esto para que contenga el user, sus videos y demas. O que no mustre nada si no hay user.
+  let initialState;
+  // Con esto leemos las cookies del navegador y las podemos usar.
+  const { email, name, id } = req.cookies;
+
+  // Si existe un user lo incluimos en el initialState.
+  if(id) {
+    initialState = {
+      user: {
+        email,
+        name,
+        id,
+      },
+      playing: {},
+      myList: [],
+      trends: [],
+      search: [],
+      originals: [],
+    }
+  } else {
+    initialState = {
+      user: {},
+      playing: {},
+      myList: [],
+      search: [],
+      trends: [],
+      originals: [],
+    }
+  }
+
   // Necesitamos el store ya que es necesario tener el estado inicial y todo lo demas
   // pero no vamos a usar react-devtool del lado del servidor asi que solo pasamos los 2 promeros argumentos.
   // Esto es porque nocesitamos que el html quede igual como quedaria con el frontend normal.
@@ -138,13 +168,15 @@ const renderApp = (req, res) =>{
   // Con esto lo que hacemos es crear una copia o un estado ya cargado del store para poder pasarlo al frontend
   // y que use este mismo y no cree uno nuevo.
   const preloadedState = store.getState();
+  // Con esto seteamos isLogged con un booleano.
+  const isLogged = (initialState.user.id);
   // Renderizamos el html que vamos a usar.
   // Provider para el store, staticRouter para el manejo de las rutas y renderRoutes para que renderice
   // el objeto de rutas del servidor para que sepa cuales y como usarlas.
   const html = renderToString(
     <Provider store={store}>
       <StaticRouter location={req.url} context={{}}>
-        {renderRoutes(serverRoutes)}
+        {renderRoutes(serverRoutes(isLogged))}
       </StaticRouter>
     </Provider>,
   );
