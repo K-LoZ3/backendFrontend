@@ -1,5 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme'; // Para montar el componente y poder hacer las pruebas.
+import { create } from 'react-test-renderer';
 import Footer from '../../components/Footer'; // El componente.
 
 // Descriccion de un grupo de pruebas (Grupo de pruebas).
@@ -18,5 +19,15 @@ describe('<Footer />', () => {
   // Comprobamos que tenga 3 etiquetas 'a'.
   test('Footer haves 3 anchors', () => {
     expect(footer.find('a')).toHaveLength(3);
+  });
+
+  test('Footer Snapshot', () => {
+    const footer = create(<Footer />);
+
+    expect(footer.toJSON()).toMatchSnapshot();
+    /* 
+      Si necesitamos que el Snapshot se actualice solo debemos ejecutar:
+      npm test -- --updateSnapshot
+    */
   });
 });
