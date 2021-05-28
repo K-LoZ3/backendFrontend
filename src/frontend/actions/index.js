@@ -89,3 +89,29 @@ export const loginUser = ({ email, password }, redirectUrl) => {
     .catch((err) => dispatch(setError(err))); // Manejamos el error.
   };
 };
+
+export const favoriteRequest = (payload, user) => {
+  return (dispatch) => {
+    const data = {
+      movieId: payload._id,
+      userId: user.id,
+    }
+
+    axios({
+      url: '/api/user-movies',
+      method: 'post',
+      data: data,
+    })
+      .then(() => dispatch(setFavorite(payload)))
+      .catch((error) => dispatch(console.log(error)));
+  };
+};
+
+export const deleteFavoriteRequest = (movieId, itemId) => {
+  return (dispatch) => {
+    console.log(movieId);
+    axios.delete(`/api/user-movies/${movieId}`)
+    .then(() => dispatch(deleteFavorite(itemId)))
+    .catch((error) => dispatch(console.log(error)));
+  };
+};

@@ -152,6 +152,21 @@ const renderApp = async (req, res) =>{
     // nosotros tenemos todo dentro de otro data.
     movieList = movieList.data.data;
 
+    // Buscamos las userMovies. Con esta peticion traemos todas las listas de peliculas
+    // del usuario que pasamos por query.
+    let userMovieList = await axios({
+      url: `${config.apiUrl}/api/user-movies?userId=${id}`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'get',
+    }); // Para sacar la data.
+    userMovieList = userMovieList.data.data; // Lo sacamos de data.
+
+    // Filtramos la lista completa de peliculas por solo las que tengan el mismo id
+    // que esta en userMovieList.
+    userMovieList = userMovieList.map(userMovie =>
+      movieList.find(movie => movie._id === userMovie.movieId)
+    );
+
     initialState = {
       user: {
         email,
@@ -159,7 +174,8 @@ const renderApp = async (req, res) =>{
         id,
       },
       playing: {},
-      myList: [],
+      // Incluimos las movies filtradas por solo las que estan en un userMovie.
+      myList: userMovieList,
       // Los que tengan PG y tengan un id seran los que van en trends.
       trends: movieList.filter((movie) => movie.contentRating === 'PG' && movie._id),
       search: [],
@@ -269,6 +285,64 @@ app.post("/auth/sign-up", async function(req, res, next) {
       name: req.body.name,
       email: req.body.email,
       id: userData.data.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Para crear una userMovie (Agregar a favoritos del usuario).
+app.post('/api/user-movies', async function(req, res, next) {
+  const { token } = req.cookies; // Para el token de la sesion.
+  const { body: data } = req; // El objeto con los 2 ids (user, movie).
+
+  try {
+    // Peticion para crear el userMovie.
+    let userMovieData = await axios({
+      url: `${config.apiUrl}/api/user-movies`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'post',
+      data: data,
+    });
+    userMovieData = userMovieData.data.data;
+
+    res.status(201).json({
+      userMovieId: userMovieData._id,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Para borrar la userMovie.
+app.delete('/api/user-movies/:movieId', async function(req, res, next) {
+  const { token, id } = req.cookies; // Token de la sesion y el id del usuario.
+  const { movieId } = req.params; // Id de la movie a borrar.
+
+  try {
+    // Buscamos todas las userMovies del usuario para luego comprobar cual borramos.
+    let userMovieList = await axios({
+      url: `${config.apiUrl}/api/user-movies?userId=${id}`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'get',
+    }); // Para sacar la data.
+    userMovieList = userMovieList.data.data;
+
+    // Filtramos solo por la movie que contenga el id que pasamos por params.
+    // Con esto conseguimos el id del userMovie que sera el que enviaremos en
+    // la peticion para que sea borrado.
+    const userMovieId = userMovieList.filter((movie) => movie.movieId === movieId)[0]._id;
+
+    // Borramos la userMovie.
+    let userMovieData = await axios({
+      url: `${config.apiUrl}/api/user-movies/${userMovieId}`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'delete',
+    });
+    userMovieData = userMovieData.data.data;
+
+    res.status(200).json({
+      userMovieId: userMovieData._id,
     });
   } catch (error) {
     next(error);

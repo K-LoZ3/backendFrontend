@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { setFavorite, deleteFavorite } from '../actions';
+import { favoriteRequest, deleteFavoriteRequest } from '../actions';
 import '../assets/styles/components/CarouselItem.scss';
 
 import playIcon from '../assets/static/play-icon.png';
@@ -10,14 +10,23 @@ import plusIcon from '../assets/static/plus-icon.png';
 import removeIcon from '../assets/static/remove-icon.png';
 
 const CarouselItem = (props) => {
-  const { id, cover, title, year, contentRating, duration, isList } = props;
+  const { _id, id, cover, title, year, contentRating, duration, isList, user, myList } = props;
   const handleSetFavorite = () => {
-    props.setFavorite({
-      id, cover, title, year, contentRating, duration,
-    });
+    // Revisamos la lista de favoritos.
+    // Buscamos en esta si ya esta el item que vamos a agregar.
+    const exist = myList.find((item) => item.id === id);
+
+    // Si este no existe agregamos a la lista y creamos la userMovie en la DB.
+    if (!exist) {
+      props.favoriteRequest({
+        _id, id, cover, title, year, contentRating, duration,
+      }, user);
+    } // TODO: Poner aviso de que ya esta en favoritos.
+    
   };
   const handleDeleteFavorite = (itemId) => {
-    props.deleteFavorite(itemId);
+    console.log(props);
+    props.deleteFavoriteRequest(_id, itemId);
   };
   /*
       Otra forma puede ser asi, no estoy seguro de si es segura pero esta.
@@ -72,13 +81,20 @@ CarouselItem.propTypes = {
   contentRating: PropTypes.string.isRequired,
   duration: PropTypes.number.isRequired,
   isList: PropTypes.bool,
-  setFavorite: PropTypes.func,
-  deleteFavorite: PropTypes.func,
+  favoriteRequest: PropTypes.func,
+  deleteFavoriteRequest: PropTypes.func,
+};
+
+const mapStateToProps = (state) => {
+  return {
+    myList: state.myList,
+    user: state.user,
+  };
 };
 
 const mapDispatchToProps = {
-  setFavorite,
-  deleteFavorite,
+  favoriteRequest,
+  deleteFavoriteRequest,
 };
 
-export default connect(null, mapDispatchToProps)(CarouselItem);
+export default connect(mapStateToProps, mapDispatchToProps)(CarouselItem);
